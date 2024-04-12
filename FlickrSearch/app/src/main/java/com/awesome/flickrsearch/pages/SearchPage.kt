@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
 fun SearchPage() {
     val itemsPerPage = 18
     var lastLoadedPage by remember { mutableStateOf(0) }
-    var photoSearchTerms by remember { mutableStateOf("") }
+    var photoSearchTerms by remember { mutableStateOf("horsehead nebula") }
     var active by remember { mutableStateOf(false) }
     val recentlySearchedTerms = remember { mutableListOf<String>() }
     val flickrApi by remember { mutableStateOf(FlickrWrapper()) }
@@ -208,6 +208,19 @@ fun SearchPage() {
 
         }
     }
+    //default search
+    LaunchedEffect(Unit) {
+        onSearchWithTerms(
+            itemsPerPage,
+            0,
+            composeScope,
+            flickrApi,
+            photoSearchTerms,
+            recentlySearchedTerms
+        ) {
+            imageResultList = it
+        }
+    }
 
     val visibleItems = remember { derivedStateOf { gridState.layoutInfo.visibleItemsInfo } }
 
@@ -229,7 +242,7 @@ fun SearchPage() {
                                 composeScope,
                                 flickrApi,
                                 photoSearchTerms,
-                                recentlySearchedTerms
+                                null
                             ) {
                                 imageResultList = imageResultList + it
                             }
@@ -246,7 +259,7 @@ fun onSearchWithTerms(
     composeScope: CoroutineScope,
     searchApi: FlickrWrapper,
     searchTerms: String,
-    recentlySearchedTerms: MutableList<String>,
+    recentlySearchedTerms: MutableList<String>?,
     onNewPhotoList: (photoList: List<PhotoUrlResult>) -> Unit,
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -260,13 +273,15 @@ fun onSearchWithTerms(
                         onNewPhotoList(it)
                     }
                 })
-            if (recentlySearchedTerms.size >= 4) {
-                recentlySearchedTerms.removeFirst()
-            }
-            //Not a huge fan of this animation fix, needed time for Search Bar Transition from Active to Inactive before updating list
-            CoroutineScope(Dispatchers.IO).launch {
-                delay(200)
-                recentlySearchedTerms.add(searchTerms)
+            recentlySearchedTerms?.let {
+                if (recentlySearchedTerms.size >= 4) {
+                    recentlySearchedTerms.removeFirst()
+                }
+                //Not a huge fan of this animation fix, needed time for Search Bar Transition from Active to Inactive before updating list
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(200)
+                    recentlySearchedTerms.add(searchTerms)
+                }
             }
         } else {
             Log.d("Search","attempted to search with empty terms")

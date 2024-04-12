@@ -3,6 +3,8 @@ package com.awesome.flickrsearch
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.navigation.compose.rememberNavController
+import com.awesome.flickrsearch.nav.FlickrSearchNavHost
 import com.awesome.flickrsearch.pages.SearchPage
 import com.awesome.flickrsearch.ui.theme.FlickrSearchTheme
 
@@ -11,7 +13,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FlickrSearchTheme {
-                SearchPage()
+                val controller = rememberNavController()
+                FlickrSearchNavHost(navController = controller)
             }
         }
     }
