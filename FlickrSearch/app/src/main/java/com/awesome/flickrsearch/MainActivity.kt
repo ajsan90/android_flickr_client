@@ -7,7 +7,9 @@ import androidx.navigation.compose.rememberNavController
 import com.awesome.flickrsearch.nav.FlickrSearchNavHost
 import com.awesome.flickrsearch.pages.SearchPage
 import com.awesome.flickrsearch.ui.theme.FlickrSearchTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

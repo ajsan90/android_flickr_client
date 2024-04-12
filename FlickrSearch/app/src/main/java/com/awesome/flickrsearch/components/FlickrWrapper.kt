@@ -1,4 +1,4 @@
-
+package com.awesome.flickrsearch.components
 
 import android.util.Log
 import com.googlecode.flickrjandroid.Flickr

@@ -1,6 +1,6 @@
 package com.awesome.flickrsearch.di
 
-import FlickrWrapper
+import com.awesome.flickrsearch.components.FlickrWrapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,9 +10,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object SimpleModule  {
-    @Provides
     @Singleton
-    fun provideFlickrWrapper(): FlickrWrapper {
-        return FlickrWrapper()
+    @Provides
+    fun provideFlickrWrapper(): ImageSearcher {
+        return object : ImageSearcher {
+            val flickerWrapper = FlickrWrapper()
+        }
+    }
+
+    interface ImageSearcher {
+
     }
 }

@@ -1,7 +1,5 @@
 package com.awesome.flickrsearch.pages
 
-import FlickrWrapper
-import PhotoUrlResult
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +48,9 @@ import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.awesome.flickrsearch.R
+import com.awesome.flickrsearch.components.FlickrWrapper
+import com.awesome.flickrsearch.components.PhotoUrlResult
+import com.awesome.flickrsearch.di.vm.SearchPageState
 import com.awesome.flickrsearch.ui.theme.FlickrSearchTheme
 import com.awesome.flickrsearch.ui.theme.mediumWidthSmallHeight
 import com.awesome.flickrsearch.ui.theme.noWidthMediumHeight
@@ -56,11 +58,12 @@ import com.awesome.flickrsearch.widgets.FlickrHeadline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchPage() {
+fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
     val itemsPerPage = 18
     var lastLoadedPage by remember { mutableStateOf(0) }
     var photoSearchTerms by remember { mutableStateOf("horsehead nebula") }
@@ -70,7 +73,7 @@ fun SearchPage() {
     var imageResultList by remember { mutableStateOf<List<PhotoUrlResult>>(listOf()) }
     val composeScope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
-
+    val uiState by uiStateFlow.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -200,6 +203,7 @@ fun SearchPage() {
                         } else {
                             SubcomposeAsyncImageContent(modifier = Modifier.clickable {
                                 Log.d("Image", "Click")
+                                uiState.onClickImage(imageResultList[index])
                             })
                         }
                     }
@@ -293,6 +297,6 @@ fun onSearchWithTerms(
 @Composable
 fun SearchPagePreview() {
     FlickrSearchTheme {
-        SearchPage()
+        SearchPage(MutableStateFlow(SearchPageState {  }))
     }
 }

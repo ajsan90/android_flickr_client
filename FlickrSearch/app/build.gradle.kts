@@ -53,9 +53,9 @@ android {
 
 
 dependencies {
-    implementation("com.google.dagger:hilt-android:2.44")
+    implementation("com.google.dagger:hilt-android:2.48.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation ("com.googlecode.flickrj-android:flickrj-android:2.1.0")
     implementation (files("libs/slf4j-android-1.6.1-RC1.jar"))
