@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Flickr Search</string>
     <string name="search_prompt">Search For An Image:</string>
+<!--    Note: borrowed this idea for a search placeholder from flickr.com-->
+    <string name="search_placeholder">Photos, people, or groups</string>
 </resources>

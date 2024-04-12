@@ -8,23 +8,22 @@ class FlickrWrapper(
 ) {
     private val photosInterface: PhotosInterface
 
+
     init {
-        val flickr = Flickr("YOUR-FLICKR-API-KEY")
+        val flickr = Flickr("27e8dae64914822e279060de8a182f62")
         photosInterface = flickr.photosInterface
     }
 
-    fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int) {
+    suspend fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int, onPhotoUrlResults: (photoList: ArrayList<PhotoUrlResult>) -> Unit) {
        // TODO("not implemented")
         val params = SearchParameters()
         params.tags = arrayOf(tags)
-
-
+        val photoList = ArrayList<PhotoUrlResult>()
         val photoListFromNetwork = photosInterface.search(params, numImagePerPage, page)
-        val photoList = ArrayList<Triple<String, String, String>>()
         for (photo in photoListFromNetwork) {
             val id = photo.id
             photoList.add(
-                Triple(
+                PhotoUrlResult(
                     id,
                     photo.mediumUrl.toString(),
                     photo.title,
@@ -46,3 +45,5 @@ class FlickrWrapper(
 
     }
 }
+
+data class PhotoUrlResult(val id: String, val url: String, val title: String)
