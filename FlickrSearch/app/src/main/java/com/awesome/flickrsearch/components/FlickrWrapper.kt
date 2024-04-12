@@ -1,13 +1,16 @@
 package com.awesome.flickrsearch.components
 
 import android.util.Log
+import com.awesome.flickrsearch.di.SimpleModule
+import com.awesome.flickrsearch.di.repos.ImageSearcher
 import com.googlecode.flickrjandroid.Flickr
 import com.googlecode.flickrjandroid.photos.PhotosInterface
 import com.googlecode.flickrjandroid.photos.SearchParameters
+import java.util.Date
 
-class FlickrWrapper(
-) {
+class FlickrWrapper : ImageSearcher {
     private val photosInterface: PhotosInterface
+    private var cachedPhotoResult: PhotoInfoResult? = null
 
 
     init {
@@ -15,17 +18,21 @@ class FlickrWrapper(
         photosInterface = flickr.photosInterface
     }
 
-    suspend fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int, onPhotoUrlResults: (photoList: ArrayList<PhotoUrlResult>) -> Unit) {
+    override suspend fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int, onPhotoUrlResults: (photoList: ArrayList<PhotoInfoResult>) -> Unit) {
         val params = SearchParameters()
         params.tags = arrayOf(tags)
-        val photoList = ArrayList<PhotoUrlResult>()
+        val photoList = ArrayList<PhotoInfoResult>()
         val photoListFromNetwork = photosInterface.search(params, numImagePerPage, page)
         for (photo in photoListFromNetwork) {
             Log.d("Photo","OnPhoto Result ${photo.url}")
             val id = photo.id
             photoList.add(
-                PhotoUrlResult(
+                PhotoInfoResult(
                     id,
+                    photo.dateTaken,
+                    photo.datePosted,
+                    photo.description,
+                    photo.largeUrl.toString(),
                     photo.mediumUrl.toString(),
                     photo.title,
                 )
@@ -34,17 +41,12 @@ class FlickrWrapper(
         onPhotoUrlResults(photoList)
     }
 
-    fun getPhotoInfo(photoId: String?) {
-        TODO("not implemented")
-        val photo = photosInterface.getInfo(photoId, null)
-//        photo.id,
-//        photo.largeUrl,
-//        photo.title,
-//        photo.description,
-//        photo.dateTaken,
-//        photo.datePosted
-
+    override fun cachePhotoResult(result: PhotoInfoResult) {
+        cachedPhotoResult = result
+    }
+    override fun getCachedPhotoResult(): PhotoInfoResult? {
+        return cachedPhotoResult
     }
 }
 
-data class PhotoUrlResult(val id: String, val url: String, val title: String)
+data class PhotoInfoResult(val id: String, val dateTaken: Date?, val datePosted: Date?, val description: String?, val largeImageUrl: String, val mediumImageUrl: String, val title: String?)

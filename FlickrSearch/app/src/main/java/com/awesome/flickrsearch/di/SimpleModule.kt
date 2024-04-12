@@ -1,6 +1,8 @@
 package com.awesome.flickrsearch.di
 
 import com.awesome.flickrsearch.components.FlickrWrapper
+import com.awesome.flickrsearch.components.PhotoInfoResult
+import com.awesome.flickrsearch.di.repos.ImageSearcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,12 +15,6 @@ object SimpleModule  {
     @Singleton
     @Provides
     fun provideFlickrWrapper(): ImageSearcher {
-        return object : ImageSearcher {
-            val flickerWrapper = FlickrWrapper()
-        }
-    }
-
-    interface ImageSearcher {
-
+        return FlickrWrapper()
     }
 }

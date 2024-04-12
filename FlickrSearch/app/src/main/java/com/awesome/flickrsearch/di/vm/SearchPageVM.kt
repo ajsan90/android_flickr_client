@@ -1,23 +1,26 @@
 package com.awesome.flickrsearch.di.vm
 
 import androidx.lifecycle.ViewModel
-import com.awesome.flickrsearch.components.PhotoUrlResult
-import com.awesome.flickrsearch.di.SimpleModule
+import com.awesome.flickrsearch.components.PhotoInfoResult
+import com.awesome.flickrsearch.di.repos.ImageSearcher
 import com.awesome.flickrsearch.nav.FsDestinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchPageVM @Inject constructor(val imageSearcher: SimpleModule.ImageSearcher
+class SearchPageVM @Inject constructor(val imageSearcher: ImageSearcher
 ) : ViewModel() {
   var navigateTo: (destination: FsDestinations) -> Unit = {}
     set(value) {
       field = value
-      uiStateFlow.value = SearchPageState { navigateTo(FsDestinations.DetailPage) }
+      uiStateFlow.value = SearchPageState(imageSearcher) {
+        imageSearcher.cachePhotoResult(it)
+        navigateTo(FsDestinations.DetailPage)
+      }
     }
 
-  val uiStateFlow = MutableStateFlow<SearchPageState>(SearchPageState {  })
+  val uiStateFlow = MutableStateFlow<SearchPageState>(SearchPageState(imageSearcher) {  })
 }
 
-data class SearchPageState(val onClickImage: (PhotoUrlResult) -> Unit)
+data class SearchPageState(val imageSearcher: ImageSearcher, val onClickImage: (PhotoInfoResult) -> Unit,)

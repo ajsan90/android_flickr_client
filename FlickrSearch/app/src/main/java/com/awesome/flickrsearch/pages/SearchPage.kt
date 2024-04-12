@@ -49,7 +49,8 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.awesome.flickrsearch.R
 import com.awesome.flickrsearch.components.FlickrWrapper
-import com.awesome.flickrsearch.components.PhotoUrlResult
+import com.awesome.flickrsearch.components.PhotoInfoResult
+import com.awesome.flickrsearch.di.repos.ImageSearcher
 import com.awesome.flickrsearch.di.vm.SearchPageState
 import com.awesome.flickrsearch.ui.theme.FlickrSearchTheme
 import com.awesome.flickrsearch.ui.theme.mediumWidthSmallHeight
@@ -69,11 +70,11 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
     var photoSearchTerms by remember { mutableStateOf("horsehead nebula") }
     var active by remember { mutableStateOf(false) }
     val recentlySearchedTerms = remember { mutableListOf<String>() }
-    val flickrApi by remember { mutableStateOf(FlickrWrapper()) }
-    var imageResultList by remember { mutableStateOf<List<PhotoUrlResult>>(listOf()) }
+    var imageResultList by remember { mutableStateOf<List<PhotoInfoResult>>(listOf()) }
     val composeScope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     val uiState by uiStateFlow.collectAsState()
+    val flickrApi by remember { mutableStateOf(uiState.imageSearcher) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -189,7 +190,7 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
                         modifier = Modifier
                             .fillMaxWidth(0.33f)
                             .height(130.dp),
-                        model = imageResultList[index].url,
+                        model = imageResultList[index].mediumImageUrl,
                         contentDescription = "Result"
                     ) {
                         val state = painter.state
@@ -261,10 +262,10 @@ fun onSearchWithTerms(
     itemsPerPage: Int,
     pageIndex: Int,
     composeScope: CoroutineScope,
-    searchApi: FlickrWrapper,
+    searchApi: ImageSearcher,
     searchTerms: String,
     recentlySearchedTerms: MutableList<String>?,
-    onNewPhotoList: (photoList: List<PhotoUrlResult>) -> Unit,
+    onNewPhotoList: (photoList: List<PhotoInfoResult>) -> Unit,
 ) {
     CoroutineScope(Dispatchers.IO).launch {
         if (searchTerms != "") {
@@ -297,6 +298,22 @@ fun onSearchWithTerms(
 @Composable
 fun SearchPagePreview() {
     FlickrSearchTheme {
-        SearchPage(MutableStateFlow(SearchPageState {  }))
+        SearchPage(MutableStateFlow(SearchPageState(object : ImageSearcher {
+            override suspend fun getPhotosByTag(
+                tags: String,
+                page: Int,
+                numImagePerPage: Int,
+                onPhotoUrlResults: (photoList: ArrayList<PhotoInfoResult>) -> Unit
+            ) {
+            }
+
+            override fun cachePhotoResult(result: PhotoInfoResult) {
+            }
+
+            override fun getCachedPhotoResult(): PhotoInfoResult? {
+                return null
+            }
+
+        }) {  }))
     }
 }
