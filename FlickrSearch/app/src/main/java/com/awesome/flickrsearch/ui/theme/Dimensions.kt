@@ -9,6 +9,12 @@ val smallWidthMediumHeight = PaddingValues(
     end = 8.dp,
     bottom = 16.dp
 )
+val noWidthMediumHeight = PaddingValues(
+    start = 0.dp,
+    top = 16.dp,
+    end = 0.dp,
+    bottom = 16.dp
+)
 val mediumWidthSmallHeight = PaddingValues(
     start = 16.dp,
     top = 8.dp,

@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation ("com.googlecode.flickrj-android:flickrj-android:2.1.0")
     implementation (files("libs/slf4j-android-1.6.1-RC1.jar"))
     implementation("androidx.core:core-ktx:1.12.0")

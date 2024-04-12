@@ -1,5 +1,6 @@
 
 
+import android.util.Log
 import com.googlecode.flickrjandroid.Flickr
 import com.googlecode.flickrjandroid.photos.PhotosInterface
 import com.googlecode.flickrjandroid.photos.SearchParameters
@@ -15,12 +16,12 @@ class FlickrWrapper(
     }
 
     suspend fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int, onPhotoUrlResults: (photoList: ArrayList<PhotoUrlResult>) -> Unit) {
-       // TODO("not implemented")
         val params = SearchParameters()
         params.tags = arrayOf(tags)
         val photoList = ArrayList<PhotoUrlResult>()
         val photoListFromNetwork = photosInterface.search(params, numImagePerPage, page)
         for (photo in photoListFromNetwork) {
+            Log.d("Photo","OnPhoto Result ${photo.url}")
             val id = photo.id
             photoList.add(
                 PhotoUrlResult(
@@ -30,7 +31,7 @@ class FlickrWrapper(
                 )
             )
         }
-
+        onPhotoUrlResults(photoList)
     }
 
     fun getPhotoInfo(photoId: String?) {
