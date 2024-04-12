@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
@@ -30,11 +30,14 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,7 +52,6 @@ import com.awesome.flickrsearch.R
 import com.awesome.flickrsearch.ui.theme.FlickrSearchTheme
 import com.awesome.flickrsearch.ui.theme.mediumWidthSmallHeight
 import com.awesome.flickrsearch.ui.theme.noWidthMediumHeight
-import com.awesome.flickrsearch.ui.theme.smallWidthMediumHeight
 import com.awesome.flickrsearch.widgets.FlickrHeadline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,12 +61,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchPage() {
+    val itemsPerPage = 18
+    var lastLoadedPage by remember { mutableStateOf(0) }
     var photoSearchTerms by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val recentlySearchedTerms = remember { mutableListOf<String>() }
     val flickrApi by remember { mutableStateOf(FlickrWrapper()) }
     var imageResultList by remember { mutableStateOf<List<PhotoUrlResult>>(listOf()) }
     val composeScope = rememberCoroutineScope()
+    val gridState = rememberLazyGridState()
 
 
     Surface(
@@ -97,39 +102,66 @@ fun SearchPage() {
                     onSearch = {
                         //enter button pressed
                         active = false
-                        onSearchWithTerms(composeScope, flickrApi, photoSearchTerms, recentlySearchedTerms) {
+                        lastLoadedPage = 0
+                        onSearchWithTerms(
+                            itemsPerPage,
+                            0,
+                            composeScope,
+                            flickrApi,
+                            photoSearchTerms,
+                            recentlySearchedTerms
+                        ) {
                             imageResultList = it
+                            //ensure we reset to top
+                            composeScope.launch {
+                                gridState.scrollToItem(0)
+                            }
                         }
-                        photoSearchTerms = ""
                     },
                     active = active,
                     placeholder = { Text(text = stringResource(id = R.string.search_placeholder)) },
                     leadingIcon = {
                         Icon(modifier = Modifier.clickable {
                             active = false
-                            onSearchWithTerms(composeScope, flickrApi, photoSearchTerms, recentlySearchedTerms) {
+                            lastLoadedPage = 0
+                            onSearchWithTerms(
+                                itemsPerPage,
+                                0,
+                                composeScope,
+                                flickrApi,
+                                photoSearchTerms,
+                                recentlySearchedTerms
+                            ) {
                                 imageResultList = it
                             }
-                            photoSearchTerms = ""
+                            //ensure we reset to top
+                            composeScope.launch {
+                                gridState.scrollToItem(0)
+                            }
                         }, imageVector = Icons.Default.Search, contentDescription = "Search Button")
                     },
                     trailingIcon = {
-                        Icon(
-                            modifier = Modifier.clickable {
-                                if (photoSearchTerms.isNotEmpty()) {
-                                    photoSearchTerms = ""
-                                } else {
-                                    active = false
-                                }
-                            },
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close Button"
-                        )
+                        if(active) {
+                            Icon(
+                                modifier = Modifier.clickable {
+                                    if (photoSearchTerms.isNotEmpty()) {
+                                        photoSearchTerms = ""
+                                    } else {
+                                        active = false
+                                    }
+                                },
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close Button"
+                            )
+                        }
                     },
 
                     ) {
                     recentlySearchedTerms.forEach {
-                        Row(modifier = Modifier.padding(mediumWidthSmallHeight)) {
+                        Row(modifier = Modifier
+                            .padding(mediumWidthSmallHeight)
+                            .fillMaxWidth()
+                            .clickable { photoSearchTerms = it }) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Previous Search"
@@ -142,6 +174,7 @@ fun SearchPage() {
             }
 
             LazyVerticalGrid(
+                state = gridState,
                 modifier = Modifier
                     .weight(8f)
                     .background(Color.Magenta.copy(alpha = 0.1f)),
@@ -158,13 +191,15 @@ fun SearchPage() {
                     ) {
                         val state = painter.state
                         if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                            CircularProgressIndicator(modifier = Modifier
-                                .align(Alignment.Center)
-                                .width(20.dp)
-                                .height(20.dp), color = MaterialTheme.colorScheme.primary)
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .width(20.dp)
+                                    .height(20.dp), color = MaterialTheme.colorScheme.primary
+                            )
                         } else {
                             SubcomposeAsyncImageContent(modifier = Modifier.clickable {
-                                Log.d("Image","Click")
+                                Log.d("Image", "Click")
                             })
                         }
                     }
@@ -173,32 +208,68 @@ fun SearchPage() {
 
         }
     }
+
+    val visibleItems = remember { derivedStateOf { gridState.layoutInfo.visibleItemsInfo } }
+
+    LaunchedEffect(visibleItems) {
+        snapshotFlow { visibleItems.value }
+            .collect { visItems ->
+                if(visItems.isNotEmpty()) {
+                    var shouldLoad = visibleItems.value.last().index == imageResultList.size - 1
+                    if (shouldLoad) {
+                        // Load the next page data here
+                        // You can call the API to fetch more data and update the imageResultList
+                        var pageToLoad = (imageResultList.size/itemsPerPage)
+                        if(lastLoadedPage != pageToLoad) {
+                            Log.d("GridItems", "Attempting to load page $pageToLoad")
+                            lastLoadedPage = pageToLoad
+                            onSearchWithTerms(
+                                itemsPerPage,
+                                pageToLoad,
+                                composeScope,
+                                flickrApi,
+                                photoSearchTerms,
+                                recentlySearchedTerms
+                            ) {
+                                imageResultList = imageResultList + it
+                            }
+                        }
+                    }
+                }
+            }
+    }
 }
 
-fun onSearchWithTerms(composeScope: CoroutineScope,
-                      searchApi: FlickrWrapper,
-                      searchTerms: String,
-                      recentlySearchedTerms: MutableList<String>,
-                      onNewPhotoList: (photoList: List<PhotoUrlResult>) -> Unit,) {
+fun onSearchWithTerms(
+    itemsPerPage: Int,
+    pageIndex: Int,
+    composeScope: CoroutineScope,
+    searchApi: FlickrWrapper,
+    searchTerms: String,
+    recentlySearchedTerms: MutableList<String>,
+    onNewPhotoList: (photoList: List<PhotoUrlResult>) -> Unit,
+) {
     CoroutineScope(Dispatchers.IO).launch {
-        searchApi.getPhotosByTag(
-            tags = searchTerms,
-            page = 0,
-            numImagePerPage = 18,
-            onPhotoUrlResults = {
-                composeScope.launch {
-                    onNewPhotoList(it)
-                }
-            })
-    }
-    if(recentlySearchedTerms.size >= 4) {
-        recentlySearchedTerms.removeFirst()
-    }
-    if(searchTerms != "") {
-        //Not a huge fan of this animation fix, needed time for Search Bar Transition from Active to Inactive before updating list
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(200)
-            recentlySearchedTerms.add(searchTerms)
+        if (searchTerms != "") {
+            searchApi.getPhotosByTag(
+                tags = searchTerms,
+                page = pageIndex,
+                numImagePerPage = itemsPerPage,
+                onPhotoUrlResults = {
+                    composeScope.launch {
+                        onNewPhotoList(it)
+                    }
+                })
+            if (recentlySearchedTerms.size >= 4) {
+                recentlySearchedTerms.removeFirst()
+            }
+            //Not a huge fan of this animation fix, needed time for Search Bar Transition from Active to Inactive before updating list
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(200)
+                recentlySearchedTerms.add(searchTerms)
+            }
+        } else {
+            Log.d("Search","attempted to search with empty terms")
         }
     }
 }
