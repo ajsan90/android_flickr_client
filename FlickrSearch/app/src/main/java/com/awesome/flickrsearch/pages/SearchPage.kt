@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -86,6 +87,7 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
             )
             Box(
                 modifier = Modifier
+                    .defaultMinSize(minHeight = 120.dp)
                     .fillMaxHeight(
                         if (!active) 0.15f else (0.15f * recentlySearchedTerms.size).coerceIn(
                             0.2f,

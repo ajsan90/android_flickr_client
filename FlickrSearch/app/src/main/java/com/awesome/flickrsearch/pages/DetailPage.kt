@@ -62,6 +62,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        //
         Column {
             Row(modifier = Modifier.padding(4.dp).clickable {
                 uiState.onBackClick()
