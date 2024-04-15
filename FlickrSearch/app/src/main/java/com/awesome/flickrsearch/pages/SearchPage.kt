@@ -48,7 +48,6 @@ import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.awesome.flickrsearch.R
-import com.awesome.flickrsearch.components.FlickrWrapper
 import com.awesome.flickrsearch.components.PhotoInfoResult
 import com.awesome.flickrsearch.di.repos.ImageSearcher
 import com.awesome.flickrsearch.di.vm.SearchPageState
@@ -67,7 +66,7 @@ import kotlinx.coroutines.launch
 fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
     val itemsPerPage = 18
     var lastLoadedPage by remember { mutableStateOf(0) }
-    var photoSearchTerms by remember { mutableStateOf("horsehead nebula") }
+    var photoSearchTerms by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
     val recentlySearchedTerms = remember { mutableListOf<String>() }
     var imageResultList by remember { mutableStateOf<List<PhotoInfoResult>>(listOf()) }
@@ -203,8 +202,7 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
                             )
                         } else {
                             SubcomposeAsyncImageContent(modifier = Modifier.clickable {
-                                Log.d("Image", "Click")
-                                uiState.onClickImage(imageResultList[index])
+                                uiState.onClickImage(imageResultList[index], gridState.firstVisibleItemIndex)
                             })
                         }
                     }
@@ -215,15 +213,10 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
     }
     //default search
     LaunchedEffect(Unit) {
-        onSearchWithTerms(
-            itemsPerPage,
-            0,
-            composeScope,
-            flickrApi,
-            photoSearchTerms,
-            recentlySearchedTerms
-        ) {
-            imageResultList = it
+        photoSearchTerms = flickrApi.getCachedSearchTerms()
+        imageResultList = flickrApi.getCachedPhotoResultsList()
+        if (imageResultList.size >= 1) {
+            gridState.scrollToItem(flickrApi.getCachedScrollIndex())
         }
     }
 
@@ -233,7 +226,8 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
         snapshotFlow { visibleItems.value }
             .collect { visItems ->
                 if(visItems.isNotEmpty()) {
-                    var shouldLoad = visibleItems.value.last().index == imageResultList.size - 1
+                    //load images before we get to the end of the current list
+                    var shouldLoad = visibleItems.value.last().index >= imageResultList.size - 4
                     if (shouldLoad) {
                         // Load the next page data here
                         // You can call the API to fetch more data and update the imageResultList
@@ -307,13 +301,25 @@ fun SearchPagePreview() {
             ) {
             }
 
-            override fun cachePhotoResult(result: PhotoInfoResult) {
+            override fun cachePhotoResult(result: PhotoInfoResult, scrollIndex: Int) {
             }
 
             override fun getCachedPhotoResult(): PhotoInfoResult? {
                 return null
             }
 
-        }) {  }))
+            override fun getCachedPhotoResultsList(): List<PhotoInfoResult> {
+                return listOf()
+            }
+
+            override fun getCachedSearchTerms(): String {
+                return ""
+            }
+
+            override fun getCachedScrollIndex(): Int {
+                TODO("Not yet implemented")
+            }
+
+        }) {_,_ ->  }))
     }
 }

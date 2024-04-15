@@ -14,13 +14,13 @@ class SearchPageVM @Inject constructor(val imageSearcher: ImageSearcher
   var navigateTo: (destination: FsDestinations) -> Unit = {}
     set(value) {
       field = value
-      uiStateFlow.value = SearchPageState(imageSearcher) {
-        imageSearcher.cachePhotoResult(it)
+      uiStateFlow.value = SearchPageState(imageSearcher) { photo, scrollIndex ->
+        imageSearcher.cachePhotoResult(photo, scrollIndex)
         navigateTo(FsDestinations.DetailPage)
       }
     }
 
-  val uiStateFlow = MutableStateFlow<SearchPageState>(SearchPageState(imageSearcher) {  })
+  val uiStateFlow = MutableStateFlow<SearchPageState>(SearchPageState(imageSearcher) { _,_ -> })
 }
 
-data class SearchPageState(val imageSearcher: ImageSearcher, val onClickImage: (PhotoInfoResult) -> Unit,)
+data class SearchPageState(val imageSearcher: ImageSearcher, val onClickImage: (PhotoInfoResult, Int) -> Unit,)

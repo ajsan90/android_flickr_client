@@ -9,6 +9,9 @@ import java.util.Date
 class FlickrWrapper : ImageSearcher {
     private val photosInterface: PhotosInterface
     private var cachedPhotoResult: PhotoInfoResult? = null
+    private var cachedScrollIndex: Int = 0
+    private var cachedSearchTags = ""
+    private var cachedPhotoResultsList = mutableListOf<PhotoInfoResult>()
 
 
     init {
@@ -19,6 +22,10 @@ class FlickrWrapper : ImageSearcher {
     override suspend fun getPhotosByTag(tags: String, page: Int, numImagePerPage: Int, onPhotoUrlResults: (photoList: ArrayList<PhotoInfoResult>) -> Unit) {
         val params = SearchParameters()
         params.tags = arrayOf(tags)
+        if(cachedSearchTags !== tags ) {
+            cachedPhotoResultsList.clear()
+        }
+        cachedSearchTags = tags
         val photoList = ArrayList<PhotoInfoResult>()
         val photoListFromNetwork = photosInterface.search(params, numImagePerPage, page)
         for (photo in photoListFromNetwork) {
@@ -36,14 +43,28 @@ class FlickrWrapper : ImageSearcher {
                 )
             )
         }
+        cachedPhotoResultsList.addAll(photoList)
         onPhotoUrlResults(photoList)
     }
 
-    override fun cachePhotoResult(result: PhotoInfoResult) {
+    override fun cachePhotoResult(result: PhotoInfoResult, scrollIndex: Int) {
         cachedPhotoResult = result
+        cachedScrollIndex = scrollIndex
     }
     override fun getCachedPhotoResult(): PhotoInfoResult? {
         return cachedPhotoResult
+    }
+
+    override fun getCachedPhotoResultsList(): List<PhotoInfoResult> {
+        return cachedPhotoResultsList
+    }
+
+    override fun getCachedSearchTerms(): String {
+        return cachedSearchTags
+    }
+
+    override fun getCachedScrollIndex(): Int {
+        return cachedScrollIndex
     }
 }
 
