@@ -1,7 +1,5 @@
 package com.awesome.flickrsearch.components
 
-import android.util.Log
-import com.awesome.flickrsearch.di.SimpleModule
 import com.awesome.flickrsearch.di.repos.ImageSearcher
 import com.googlecode.flickrjandroid.Flickr
 import com.googlecode.flickrjandroid.photos.PhotosInterface
@@ -24,7 +22,7 @@ class FlickrWrapper : ImageSearcher {
         val photoList = ArrayList<PhotoInfoResult>()
         val photoListFromNetwork = photosInterface.search(params, numImagePerPage, page)
         for (photo in photoListFromNetwork) {
-            Log.d("Photo","OnPhoto Result ${photo.url}")
+            //Log.d("Photo","OnPhoto Result ${photo.url}")
             val id = photo.id
             photoList.add(
                 PhotoInfoResult(

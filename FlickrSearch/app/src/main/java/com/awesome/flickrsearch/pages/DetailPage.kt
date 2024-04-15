@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
@@ -59,7 +63,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            Row(modifier = Modifier.clickable {
+            Row(modifier = Modifier.padding(4.dp).clickable {
                 uiState.onBackClick()
             }) {
                 Icon(
@@ -71,8 +75,8 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
             }
             Box(
                 modifier = Modifier
+                    .background(Color.Black)
                     .clip(RectangleShape) // Clip the box content // Give the size you want...
-                    .background(MaterialTheme.colorScheme.background)
 
             ) {
                 SubcomposeAsyncImage(
@@ -117,10 +121,60 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                             })
                     }
                 }
+                Row(modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .background(Color.Black.copy(alpha = 0.5f))) {
+                    Text(text = "Pinch To Zoom", color = Color.White, modifier = Modifier.align(
+                        Alignment.CenterVertically
+                    ))
+                }
             }
-            Card(modifier = Modifier.padding(16.dp)) {
+            Card(elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp), modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(1f)) {
                 Column {
-                    Text(style = Typography.titleLarge, modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp), text = uiState.getCachedPhotoInfoResult?.title ?: "No Title")
+                    Text(
+                        fontWeight = FontWeight.Bold,
+                        style = Typography.titleSmall,
+                        modifier = Modifier
+                            .padding(top = 16.dp, start = 16.dp),
+                        text = "Title: "
+                    )
+                    Text(style = Typography.titleMedium, modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 16.dp), text = uiState.getCachedPhotoInfoResult?.title ?: "No Title")
+                    Text(style = Typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(top = 8.dp, start = 16.dp), text = "Description: ")
+                    Text(style = Typography.titleSmall, modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(16.dp), text = uiState.getCachedPhotoInfoResult?.description ?: "")
+                    Row(modifier = Modifier.align(Alignment.Start)) {
+                        Text(
+                            style = Typography.titleSmall, modifier = Modifier
+                                .padding(start = 16.dp), text = "Photo Taken: "
+                        )
+                        Text(
+                            style = Typography.titleSmall,
+                            modifier = Modifier
+                                .padding(start = 16.dp),
+                            text = uiState.getCachedPhotoInfoResult?.dateTaken.toString() ?: ""
+                        )
+                    }
+                    Row(modifier = Modifier.align(Alignment.Start)) {
+                        Text(
+                            style = Typography.titleSmall, modifier = Modifier
+                                .padding(start = 16.dp), text = "Posted: "
+                        )
+                        Text(
+                            style = Typography.titleSmall,
+                            modifier = Modifier
+                                .padding(start = 16.dp, bottom = 8.dp),
+                            text = uiState.getCachedPhotoInfoResult?.datePosted.toString() ?: ""
+                        )
+                    }
                 }
             }
         }
