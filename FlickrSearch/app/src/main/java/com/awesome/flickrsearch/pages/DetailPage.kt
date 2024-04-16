@@ -3,6 +3,7 @@ package com.awesome.flickrsearch.pages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
@@ -52,6 +55,8 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import com.awesome.flickrsearch.ui.theme.Typography
+import com.awesome.flickrsearch.ui.theme.mediumWidthMicroHeight
+import com.awesome.flickrsearch.ui.theme.smallWidthMediumHeight
 
 @Composable
 fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
@@ -145,11 +150,11 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                     }
                 }
             }
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Card(
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(mediumWidthMicroHeight)
                         .fillMaxWidth(1f)
                 ) {
                     Column {
@@ -174,12 +179,18 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                                 .align(Alignment.Start)
                                 .padding(top = 8.dp, start = 16.dp), text = stringResource(id = R.string.description)
                         )
+                        var description = ""
+                        uiState?.getCachedPhotoInfoResult?.description?.let {desc ->
+                            if (desc.isNotBlank()) {
+                                description = desc
+                            }
+                        }
                         Text(
                             style = Typography.titleSmall,
                             modifier = Modifier
                                 .align(Alignment.Start)
-                                .padding(16.dp),
-                            text = uiState.getCachedPhotoInfoResult?.description ?: ""
+                                .padding(start = 16.dp),
+                            text = description
                         )
                         Row(modifier = Modifier.align(Alignment.Start)) {
                             Text(

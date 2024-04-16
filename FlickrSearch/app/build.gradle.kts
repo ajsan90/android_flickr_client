@@ -53,6 +53,7 @@ android {
 
 
 dependencies {
+    implementation ("androidx.core:core-splashscreen:1.0.1")
     implementation("com.google.dagger:hilt-android:2.48.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
