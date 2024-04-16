@@ -4,6 +4,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.awesome.flickrsearch.components.FlickrWrapper
 import com.awesome.flickrsearch.components.PhotoInfoResult
+import kotlinx.coroutines.runBlocking
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,7 +28,7 @@ class FlickrSearchInstrumentedTest {
     }
 
     @Test
-    fun testFlickrWrapperCacheAsImageSearcherCache() {
+    fun confirmPhotoResultCache() {
         val resultId = "999"
         var imageSearcher = FlickrWrapper()
         imageSearcher.cachePhotoResult(
@@ -38,10 +39,86 @@ class FlickrSearchInstrumentedTest {
                 largeImageUrl = "image.com/large",
                 mediumImageUrl = "image.com/medium",
                 title = "title1"
-            )
+            ), 0
         )
         //simulate travel between results page and details page
         //which is reliant upon cached photo capability
         assertEquals(imageSearcher.getCachedPhotoResult()!!.id, resultId)
+    }
+
+    @Test
+    fun confirmPhotoResultsListGrowsWithSameSearchTerms() {
+        var imageSearcher = FlickrWrapper()
+        var id1 = ""
+        var id2 = ""
+
+        runBlocking {
+            imageSearcher.getPhotosByTag(
+                tags = "dogs",
+                page = 0,
+                numImagePerPage = 10,
+                onPhotoUrlResults = { photoList ->
+                    id1 = photoList.first().id
+                })
+            imageSearcher.getPhotosByTag(
+                tags = "dogs",
+                page = 1,
+                numImagePerPage = 10,
+                onPhotoUrlResults = { photoList ->
+                    id2 = photoList.first().id
+                })
+        }
+
+        //simulate travel between results page and details page
+        //which is reliant upon cached photo capability
+        assertEquals(id1, id2)
+    }
+
+    @Test
+    fun confirmPhotoResultsListResetsWithDifferentSearchTerms() {
+        var imageSearcher = FlickrWrapper()
+        var id1 = ""
+        var id2 = ""
+
+        runBlocking {
+            imageSearcher.getPhotosByTag(
+                tags = "dogs",
+                page = 0,
+                numImagePerPage = 10,
+                onPhotoUrlResults = { photoList ->
+                    id1 = photoList.first().id
+                })
+            imageSearcher.getPhotosByTag(
+                tags = "cats",
+                page = 1,
+                numImagePerPage = 10,
+                onPhotoUrlResults = { photoList ->
+                    id2 = photoList.first().id
+                })
+        }
+
+        //simulate travel between results page and details page
+        //which is reliant upon cached photo capability
+        assertNotEquals(id1, id2)
+    }
+
+    @Test
+    fun confirmPhotoResultsListSize() {
+        var imageSearcher = FlickrWrapper()
+        var pageSize = 10;
+        var listSize = 0;
+        runBlocking {
+            imageSearcher.getPhotosByTag(
+                tags = "dogs",
+                page = 0,
+                numImagePerPage = pageSize,
+                onPhotoUrlResults = { photoList ->
+                    listSize = photoList.size
+                })
+        }
+
+        //simulate travel between results page and details page
+        //which is reliant upon cached photo capability
+        assertEquals(pageSize, listSize)
     }
 }

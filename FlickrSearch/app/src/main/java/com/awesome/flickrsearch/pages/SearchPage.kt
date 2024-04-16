@@ -235,7 +235,7 @@ fun SearchPage(uiStateFlow: MutableStateFlow<SearchPageState>) {
                         // You can call the API to fetch more data and update the imageResultList
                         var pageToLoad = (imageResultList.size/itemsPerPage)
                         if(lastLoadedPage != pageToLoad) {
-                            Log.d("GridItems", "Attempting to load page $pageToLoad")
+                            //Log.d("GridItems", "Attempting to load page $pageToLoad")
                             lastLoadedPage = pageToLoad
                             onSearchWithTerms(
                                 itemsPerPage,

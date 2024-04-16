@@ -3,4 +3,8 @@
     <string name="search_prompt">Search For An Image:</string>
 <!--    Note: borrowed this idea for a search placeholder from flickr.com-->
     <string name="search_placeholder">Photos, people, or groups</string>
+    <string name="no_title">No Title</string>
+    <string name="description">Description: </string>
+    <string name="photo_taken">Photo Taken: </string>
+    <string name="posted">Posted: </string>
 </resources>
