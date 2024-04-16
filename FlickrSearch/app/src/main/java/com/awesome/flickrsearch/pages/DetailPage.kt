@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +58,7 @@ import kotlin.math.sin
 import com.awesome.flickrsearch.ui.theme.Typography
 import com.awesome.flickrsearch.ui.theme.mediumWidthMicroHeight
 import com.awesome.flickrsearch.ui.theme.smallWidthMediumHeight
+import java.text.SimpleDateFormat
 
 @Composable
 fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
@@ -65,6 +67,11 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
     var zoom by remember { mutableStateOf(1f) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
+
+    val sdf by remember { mutableStateOf(SimpleDateFormat("dd/mm/yyyy"))}
+    var datePosted by remember { mutableStateOf("") }
+    var dateTaken by remember { mutableStateOf("") }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -82,7 +89,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back"
                     )
-                    Text(text = "Go Back", modifier = Modifier.align(Alignment.CenterVertically))
+                    Text(text = stringResource(id = R.string.go_back), modifier = Modifier.align(Alignment.CenterVertically))
                 }
                 Box(
                     modifier = Modifier
@@ -143,7 +150,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                             .background(Color.Black.copy(alpha = 0.5f))
                     ) {
                         Text(
-                            text = "Pinch To Zoom", color = Color.White, modifier = Modifier.align(
+                            text = stringResource(id = R.string.pinch_to_zoom), color = Color.White, modifier = Modifier.align(
                                 Alignment.CenterVertically
                             )
                         )
@@ -163,7 +170,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                             style = Typography.titleSmall,
                             modifier = Modifier
                                 .padding(top = 16.dp, start = 16.dp),
-                            text = "Title: "
+                            text = stringResource(id = R.string.title)
                         )
                         Text(
                             style = Typography.titleMedium,
@@ -201,7 +208,7 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                                 style = Typography.titleSmall,
                                 modifier = Modifier
                                     .padding(start = 16.dp),
-                                text = uiState.getCachedPhotoInfoResult?.dateTaken.toString() ?: ""
+                                text = dateTaken
                             )
                         }
                         Row(modifier = Modifier.align(Alignment.Start)) {
@@ -213,13 +220,22 @@ fun DetailPage(uiStateFlow: MutableStateFlow<DetailPageState>) {
                                 style = Typography.titleSmall,
                                 modifier = Modifier
                                     .padding(start = 16.dp, bottom = 8.dp),
-                                text = uiState.getCachedPhotoInfoResult?.datePosted.toString() ?: ""
+                                text = datePosted
                             )
                         }
                     }
                 }
             }
 
+        }
+    }
+    LaunchedEffect(Unit)
+    {
+        uiState.getCachedPhotoInfoResult?.datePosted?.let {
+            datePosted = sdf.format(it)
+        }
+        uiState.getCachedPhotoInfoResult?.dateTaken?.let {
+            dateTaken = sdf.format(it)
         }
     }
 }

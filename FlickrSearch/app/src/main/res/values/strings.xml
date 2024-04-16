@@ -7,4 +7,7 @@
     <string name="description">Description: </string>
     <string name="photo_taken">Photo Taken: </string>
     <string name="posted">Posted: </string>
+    <string name="pinch_to_zoom">Pinch To Zoom</string>
+    <string name="title">Title: </string>
+    <string name="go_back">Go Back</string>
 </resources>
